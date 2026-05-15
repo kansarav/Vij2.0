@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VIJ FUEL — Nutrition Protocol v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #141414; --card: #1c1c1c; --border: #2a2a2a;
+    --gold: #c8a84b; --gold-light: #e8c870; --green: #4caf7d;
+    --teal: #38bdf8; --red: #f87171; --orange: #fb923c;
+    --text: #f0ede8; --muted: #7a7570;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; background: var(--bg); }
+  body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--bg); min-height: 100vh; max-width: 480px; margin: 0 auto; padding-bottom: 100px; }
+
+  .hero { background: linear-gradient(135deg, #0a0a0a 0%, #1a1205 50%, #0f1a0a 100%); padding: 28px 20px 24px; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(200,168,75,0.12) 0%, transparent 70%); pointer-events: none; }
+  .hero-tag { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 0.95; color: var(--text); letter-spacing: 1px; }
+  .hero-title span { color: var(--gold); }
+  .hero-sub { margin-top: 10px; font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.5; }
+  .macro-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+  .macro-pill { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 10px 6px; text-align: center; }
+  .macro-pill .val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); line-height: 1; }
+  .macro-pill .lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+  .nav-wrap { position: sticky; top: 0; z-index: 100; background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+  .nav-wrap::-webkit-scrollbar { display: none; }
+  .nav { display: flex; gap: 0; white-space: nowrap; }
+  .nav-btn { padding: 14px 16px; font-size: 12px; font-weight: 500; letter-spacing: 0.5px; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  .section { display: none; padding: 16px; }
+  .section.active { display: block; }
+
+  .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; margin-top: 8px; }
+  .cat-icon { font-size: 22px; }
+  .cat-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--text); letter-spacing: 1px; line-height: 1; }
+  .cat-count { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; }
+
+  .meal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s; }
+  .meal-card:hover { border-color: var(--gold); }
+  .meal-header { padding: 16px 16px 12px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; }
+  .meal-emoji { font-size: 28px; flex-shrink: 0; }
+  .meal-info { flex: 1; min-width: 0; }
+  .meal-name { font-weight: 600; font-size: 15px; color: var(--text); line-height: 1.3; }
+  .meal-tagline { font-size: 12px; color: var(--muted); margin-top: 3px; font-style: italic; }
+  .meal-macros { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .m-tag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+  .m-cal { background: rgba(200,168,75,0.12); color: var(--gold); }
+  .m-pro { background: rgba(76,175,125,0.12); color: var(--green); }
+  .m-carb { background: rgba(56,189,248,0.12); color: var(--teal); }
+  .m-fat { background: rgba(251,146,60,0.12); color: var(--orange); }
+  .expand-arrow { font-size: 16px; color: var(--muted); transition: transform 0.25s; flex-shrink: 0; margin-top: 4px; }
+  .meal-card.open .expand-arrow { transform: rotate(180deg); }
+
+  .recipe-body { display: none; border-top: 1px solid var(--border); background: var(--surface); }
+  .meal-card.open .recipe-body { display: block; }
+  .recipe-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .recipe-section:last-child { border-bottom: none; }
+  .rs-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .rs-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, var(--border), transparent); }
+
+  .ingredient-list { list-style: none; }
+  .ingredient-list li { display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; }
+  .ingredient-list li:last-child { border-bottom: none; }
+  .ing-name { color: var(--text); flex: 1; }
+  .ing-qty { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--gold); text-align: right; margin-left: 8px; white-space: nowrap; }
+  .ing-note { font-size: 11px; color: var(--muted); display: block; margin-top: 1px; }
+
+  .steps-list { list-style: none; counter-reset: step-counter; }
+  .steps-list li { display: flex; gap: 10px; padding: 8px 0; font-size: 13px; line-height: 1.6; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .steps-list li:last-child { border-bottom: none; }
+  .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); min-width: 22px; line-height: 1.2; opacity: 0.6; }
+
+  .tip-box { background: rgba(200,168,75,0.06); border: 1px solid rgba(200,168,75,0.2); border-radius: 10px; padding: 10px 12px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .tip-box strong { color: var(--gold); }
+
+  .snack-grid { display: grid; gap: 10px; }
+  .snack-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .snack-icon { font-size: 24px; flex-shrink: 0; }
+  .snack-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .snack-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .snack-macros { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .fish-banner { background: linear-gradient(135deg, #0d1f0d, #0a1520); border: 1px solid #2a3a2a; border-radius: 14px; padding: 16px; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .fish-banner::before { content: '🐟'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 60px; opacity: 0.12; }
+  .fish-banner-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--green); letter-spacing: 1px; }
+  .fish-banner-sub { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+  .macro-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .macro-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .macro-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--gold); line-height: 1; }
+  .macro-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .macro-fill { height: 100%; border-radius: 2px; }
+  .macro-note { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  .rule-list { list-style: none; }
+  .rule-list li { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.6; color: #ccc; }
+  .rule-list li:last-child { border-bottom: none; }
+  .rule-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--gold); opacity: 0.3; line-height: 1; min-width: 28px; }
+
+  .bed-card { background: linear-gradient(135deg, #0a0f1a, #141428); border: 1px solid #1e1e40; border-radius: 16px; padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
+  .bed-card::after { content: '🌙'; position: absolute; right: 16px; top: 16px; font-size: 32px; opacity: 0.2; }
+  .bed-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #a78bfa; letter-spacing: 1px; }
+  .bed-note { background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.15); border-radius: 8px; padding: 10px; font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 12px; }
+  .bed-note strong { color: #a78bfa; }
+
+  .divider { height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 20px 0; }
+  .timing-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(200,168,75,0.1); border: 1px solid rgba(200,168,75,0.2); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--gold); margin-bottom: 12px; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); border-top: 1px solid var(--border); display: flex; padding: 8px 0 16px; }
+  .bnav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px; background: none; border: none; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: color 0.2s; }
+  .bnav-btn.active { color: var(--gold); }
+  .bnav-icon { font-size: 20px; }
+  .bnav-label { font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">VIJ 3.0 · Nutrition Protocol · 100→80kg · Expanded Edition</div>
+  <div class="hero-title">FUEL<br><span>PROTOCOL</span></div>
+  <div class="hero-sub">High protein · Ovo-lacto vegetarian + fish · Anti-inflammatory · Psoriasis-aware · 10 recipes per section</div>
+  <div class="macro-strip">
+    <div class="macro-pill"><div class="val">2200</div><div class="lbl">Kcal</div></div>
+    <div class="macro-pill"><div class="val">185g</div><div class="lbl">Protein</div></div>
+    <div class="macro-pill"><div class="val">200g</div><div class="lbl">Carbs</div></div>
+    <div class="macro-pill"><div class="val">65g</div><div class="lbl">Fat</div></div>
+  </div>
+</div>
+
+<div class="nav-wrap">
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection('breakfast')">Breakfast</button>
+    <button class="nav-btn" onclick="showSection('lunch')">Lunch</button>
+    <button class="nav-btn" onclick="showSection('dinner')">Dinner</button>
+    <button class="nav-btn" onclick="showSection('snacks')">Snacks</button>
+    <button class="nav-btn" onclick="showSection('fish')">Fish</button>
+    <button class="nav-btn" onclick="showSection('bedtime')">Bedtime</button>
+    <button class="nav-btn" onclick="showSection('macros')">Macros</button>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- BREAKFAST -->
+<!-- ======================================================= -->
+<div id="breakfast" class="section active">
+  <div class="cat-header">
+    <span class="cat-icon">🌅</span>
+    <span class="cat-title">BREAKFAST</span>
+    <span class="cat-count">10 OPTIONS</span>
+  </div>
+  <div class="timing-badge">⏰ 6:30–7:30am · Post-workout · Carb-forward</div>
+
+  <!-- B1 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥚</div>
+      <div class="meal-info">
+        <div class="meal-name">Greek Egg White Masala Scramble</div>
+        <div class="meal-tagline">Anti-inflammatory · high protein · psoriasis-fighter</div>
+        <div class="meal-macros"><span class="m-tag m-cal">510 kcal</span><span class="m-tag m-pro">48g protein</span><span class="m-tag m-carb">35g carbs</span><span class="m-tag m-fat">18g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">2 large (100g)</span></li>
+          <li><span class="ing-name">Egg whites</span><span class="ing-qty">4 (120g)</span></li>
+          <li><span class="ing-name">Low-fat paneer, crumbled</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Spinach, fresh</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Tomato, diced</span><span class="ing-qty">1 medium (100g)</span></li>
+          <li><span class="ing-name">Onion, fine dice</span><span class="ing-qty">½ small (40g)</span></li>
+          <li><span class="ing-name">Green chilli, sliced</span><span class="ing-qty">1</span></li>
+          <li><span class="ing-name">Ginger, grated</span><span class="ing-qty">1 tsp (5g)</span></li>
+          <li><span class="ing-name">Cumin seeds</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Turmeric</span><span class="ing-qty">¼ tsp</span></li>
+          <li><span class="ing-name">Garam masala</span><span class="ing-qty">¼ tsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tsp (5g)</span></li>
+          <li><span class="ing-name">Whole wheat roti</span><span class="ing-qty">1 (40g)</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Heat ghee on medium. Cumin crackles 30 sec. Add onion + ginger + chilli — 3 min.</li>
+          <li><span class="step-num">2</span>Add tomato + turmeric — cook 3 min until broken down. Add spinach, wilt 2 min.</li>
+          <li><span class="step-num">3</span>Add crumbled paneer, stir to coat.</li>
+          <li><span class="step-num">4</span>Whisk eggs + whites, pour over. Fold gently — remove from heat while slightly wet.</li>
+          <li><span class="step-num">5</span>Finish with garam masala + salt. Serve with 1 roti.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>VIJ TIP:</strong> Black pepper with turmeric boosts curcumin absorption by 2000%. Ghee's fat carries it further. Psoriasis double-win.</div></div>
+    </div>
+  </div>
+
+  <!-- B2 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫙</div>
+      <div class="meal-info">
+        <div class="meal-name">Overnight Greek Yogurt Protein Bowl</div>
+        <div class="meal-tagline">No-cook · casein-rich · prep the night before</div>
+        <div class="meal-macros"><span class="m-tag m-cal">480 kcal</span><span class="m-tag m-pro">45g protein</span><span class="m-tag m-carb">42g carbs</span><span class="m-tag m-fat">14g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Greek yogurt (full fat)</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Whey / pea protein powder</span><span class="ing-qty">30g (1 scoop)</span></li>
+          <li><span class="ing-name">Rolled oats</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Chia seeds</span><span class="ing-qty">1 tbsp (12g)</span></li>
+          <li><span class="ing-name">Ground flaxseeds</span><span class="ing-qty">1 tbsp (10g)</span></li>
+          <li><span class="ing-name">Mixed berries</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Banana, sliced</span><span class="ing-qty">½ (50g)</span></li>
+          <li><span class="ing-name">Walnuts</span><span class="ing-qty">15g</span></li>
+          <li><span class="ing-name">Raw honey</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Cinnamon</span><span class="ing-qty">½ tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Night before: mix yogurt + protein + cinnamon until smooth. Stir in oats, chia, flax.</li>
+          <li><span class="step-num">2</span>Top with frozen/fresh berries. Refrigerate covered.</li>
+          <li><span class="step-num">3</span>Morning: add banana, walnuts, honey. Done in 60 seconds.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>VIJ TIP:</strong> Chia + flax = 5g ALA omega-3. Berries are the most potent anti-inflammatory food per calorie. This breakfast fights psoriasis while feeding muscles.</div></div>
+    </div>
+  </div>
+
+  <!-- B3 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫓</div>
+      <div class="meal-info">
+        <div class="meal-name">Moong Dal Chilla Wraps</div>
+        <div class="meal-tagline">South Asian power breakfast · high fibre · batch batter</div>
+        <div class="meal-macros"><span class="m-tag m-cal">520 kcal</span><span class="m-tag m-pro">42g protein</span><span class="m-tag m-carb">48g carbs</span><span class="m-tag m-fat">16g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Chilla Batter</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Split moong dal (soaked overnight)</span><span class="ing-qty">80g dry</span></li>
+          <li><span class="ing-name">Ginger</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Green chilli</span><span class="ing-qty">1</span></li>
+          <li><span class="ing-name">Cumin seeds</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Turmeric</span><span class="ing-qty">¼ tsp</span></li>
+          <li><span class="ing-name">Water</span><span class="ing-qty">80–100ml</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Filling</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Low-fat paneer, grated</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Spinach, fine-chopped</span><span class="ing-qty">50g</span></li>
+          <li><span class="ing-name">Red onion</span><span class="ing-qty">30g</span></li>
+          <li><span class="ing-name">Chaat masala</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Greek yogurt (dip)</span><span class="ing-qty">50g</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Blend soaked dal + seasonings + water to smooth crepe batter. Mix filling separately.</li>
+          <li><span class="step-num">2</span>Non-stick pan, medium. ½ tsp ghee. Pour ½ batter, spread thin. Cook 2–3 min until edges lift.</li>
+          <li><span class="step-num">3</span>Flip 1 min. Add filling to half, fold. Press. Repeat.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>BATCH:</strong> Make 3–4x batter, refrigerate 2 days. Fill fresh in 5 min each morning.</div></div>
+    </div>
+  </div>
+
+  <!-- B4 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥣</div>
+      <div class="meal-info">
+        <div class="meal-name">Savoury Cottage Cheese Power Bowl</div>
+        <div class="meal-tagline">Zero cooking · BCAAs · Mediterranean twist</div>
+        <div class="meal-macros"><span class="m-tag m-cal">490 kcal</span><span class="m-tag m-pro">44g protein</span><span class="m-tag m-carb">38g carbs</span><span class="m-tag m-fat">17g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Low-fat cottage cheese</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Hard-boiled eggs</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Cucumber, diced</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Cherry tomatoes, halved</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Red bell pepper, diced</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Extra virgin olive oil</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Lemon juice</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Mixed herbs + chilli flakes</span><span class="ing-qty">½ tsp each</span></li>
+          <li><span class="ing-name">Pumpkin seeds</span><span class="ing-qty">1 tbsp (10g)</span></li>
+          <li><span class="ing-name">Whole grain toast</span><span class="ing-qty">1 slice (40g)</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Place cottage cheese as base. Arrange veg on top. Slice eggs, place over.</li>
+          <li><span class="step-num">2</span>Drizzle EVOO + lemon. Scatter herbs, chilli, pumpkin seeds. Season.</li>
+          <li><span class="step-num">3</span>Serve with toast.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- B5 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🧇</div>
+      <div class="meal-info">
+        <div class="meal-name">Besan Omelette Pancakes</div>
+        <div class="meal-tagline">Chickpea flour · gluten-free · weekend treat</div>
+        <div class="meal-macros"><span class="m-tag m-cal">530 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">44g carbs</span><span class="m-tag m-fat">20g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Besan (chickpea flour)</span><span class="ing-qty">70g</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Greek yogurt</span><span class="ing-qty">3 tbsp (45g)</span></li>
+          <li><span class="ing-name">Water</span><span class="ing-qty">60ml</span></li>
+          <li><span class="ing-name">Spinach, fine-chopped</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Red onion</span><span class="ing-qty">30g</span></li>
+          <li><span class="ing-name">Ajwain (carom seeds)</span><span class="ing-qty">¼ tsp</span></li>
+          <li><span class="ing-name">Turmeric + baking powder</span><span class="ing-qty">¼ tsp + ½ tsp</span></li>
+          <li><span class="ing-name">Low-fat paneer, crumbled</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Avocado (side)</span><span class="ing-qty">½ medium (60g)</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Whisk besan + eggs + yogurt + water + baking powder to lump-free batter. Fold in veg + spices. Rest 5 min.</li>
+          <li><span class="step-num">2</span>Pan medium, ½ tsp ghee. Pour half batter, spread 15cm circle. Scatter half paneer on top while wet.</li>
+          <li><span class="step-num">3</span>Cook 3 min, flip carefully, 2 min until golden. Repeat. Serve with avocado + lemon.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- B6 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🌾</div>
+      <div class="meal-info">
+        <div class="meal-name">Protein-Packed Poha</div>
+        <div class="meal-tagline">Iron-rich flattened rice · gut-friendly · 15 min</div>
+        <div class="meal-macros"><span class="m-tag m-cal">500 kcal</span><span class="m-tag m-pro">38g protein</span><span class="m-tag m-carb">52g carbs</span><span class="m-tag m-fat">14g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Thick poha (flattened rice)</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Paneer, small cubes</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Hard-boiled egg, sliced</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Greek yogurt (side)</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Onion, diced</span><span class="ing-qty">1 medium (80g)</span></li>
+          <li><span class="ing-name">Green chilli</span><span class="ing-qty">1–2</span></li>
+          <li><span class="ing-name">Curry leaves</span><span class="ing-qty">1 sprig</span></li>
+          <li><span class="ing-name">Mustard seeds</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Turmeric</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Roasted peanuts</span><span class="ing-qty">20g</span></li>
+          <li><span class="ing-name">Lemon juice</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Coriander</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Rinse poha in a sieve under running water 30 sec. Let drain 5 min — it will soften perfectly.</li>
+          <li><span class="step-num">2</span>Heat ghee. Mustard seeds pop. Add curry leaves, onion, chilli — 4 min.</li>
+          <li><span class="step-num">3</span>Add paneer cubes — 3 min until golden edges. Add turmeric.</li>
+          <li><span class="step-num">4</span>Add softened poha + peanuts. Toss gently on low heat 2 min. Season with salt + lemon.</li>
+          <li><span class="step-num">5</span>Top with sliced boiled eggs + coriander. Serve with 100g yogurt on side.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>IRON TIP:</strong> Poha is one of the highest iron grain foods. Eating it with lemon juice (vitamin C) increases iron absorption 3x. The yogurt on the side adds 10g extra protein.</div></div>
+    </div>
+  </div>
+
+  <!-- B7 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥙</div>
+      <div class="meal-info">
+        <div class="meal-name">Egg & Paneer Breakfast Kathi Roll</div>
+        <div class="meal-tagline">On-the-go · street-food inspired · satisfying</div>
+        <div class="meal-macros"><span class="m-tag m-cal">545 kcal</span><span class="m-tag m-pro">46g protein</span><span class="m-tag m-carb">40g carbs</span><span class="m-tag m-fat">22g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Whole wheat paratha / roti</span><span class="ing-qty">2 (80g)</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Egg whites</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Paneer, sliced thin</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Red onion, thin rings</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Cucumber, strips</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Mint chutney</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Greek yogurt</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Chaat masala</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Cumin powder</span><span class="ing-qty">¼ tsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">½ tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Whisk eggs + whites + cumin + salt. Scramble in ghee — remove just before fully set.</li>
+          <li><span class="step-num">2</span>Pan-grill paneer slices 1 min each side. Dust with chaat masala.</li>
+          <li><span class="step-num">3</span>Warm paratha. Spread chutney + yogurt. Layer eggs, paneer, onion rings, cucumber.</li>
+          <li><span class="step-num">4</span>Roll tightly, wrap bottom half in foil. Eat immediately or pack for commute.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- B8 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍠</div>
+      <div class="meal-info">
+        <div class="meal-name">Sweet Potato & Egg Hash</div>
+        <div class="meal-tagline">Vitamin A powerhouse · complex carbs · weekend brunch</div>
+        <div class="meal-macros"><span class="m-tag m-cal">515 kcal</span><span class="m-tag m-pro">36g protein</span><span class="m-tag m-carb">50g carbs</span><span class="m-tag m-fat">18g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Sweet potato, small cubes (skin on)</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">3</span></li>
+          <li><span class="ing-name">Low-fat paneer, cubed</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Red onion, diced</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Red + green bell pepper</span><span class="ing-qty">80g each, diced</span></li>
+          <li><span class="ing-name">Garlic, minced</span><span class="ing-qty">2 cloves</span></li>
+          <li><span class="ing-name">Smoked paprika</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Cumin</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Coriander leaves</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Olive oil</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Feta / crumbled paneer (finish)</span><span class="ing-qty">20g</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Microwave sweet potato cubes 4 min to par-cook (or boil 5 min). They should be almost done.</li>
+          <li><span class="step-num">2</span>Heat olive oil in wide pan on high. Add sweet potato — spread flat, don't stir 3 min to get a crust. Then toss.</li>
+          <li><span class="step-num">3</span>Add onion, pepper, garlic. Stir-fry 4 min. Add paneer cubes + spices.</li>
+          <li><span class="step-num">4</span>Make 3 wells. Crack an egg in each. Cover pan, cook 3–4 min for runny yolks (5–6 for set).</li>
+          <li><span class="step-num">5</span>Scatter coriander + crumbled paneer. Serve from pan.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>VIJ TIP:</strong> Sweet potato skin is loaded with potassium + B6. Leave it on. One cup provides your entire day's vitamin A requirement — essential for immune regulation and skin cell turnover (psoriasis directly benefits).</div></div>
+    </div>
+  </div>
+
+  <!-- B9 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍳</div>
+      <div class="meal-info">
+        <div class="meal-name">Shakshuka with Paneer</div>
+        <div class="meal-tagline">Middle Eastern · lycopene-rich · one-pan wonder</div>
+        <div class="meal-macros"><span class="m-tag m-cal">500 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">36g carbs</span><span class="m-tag m-fat">22g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">3</span></li>
+          <li><span class="ing-name">Paneer, cubed 2cm</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Chopped tomatoes (tin or fresh)</span><span class="ing-qty">400g</span></li>
+          <li><span class="ing-name">Red bell pepper, diced</span><span class="ing-qty">1 large (120g)</span></li>
+          <li><span class="ing-name">Onion, diced</span><span class="ing-qty">1 medium (80g)</span></li>
+          <li><span class="ing-name">Garlic</span><span class="ing-qty">4 cloves, sliced</span></li>
+          <li><span class="ing-name">Cumin seeds</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Smoked paprika</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Harissa paste / red chilli</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Turmeric</span><span class="ing-qty">¼ tsp</span></li>
+          <li><span class="ing-name">EVOO</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Fresh coriander + feta crumble</span><span class="ing-qty">to finish</span></li>
+          <li><span class="ing-name">Whole wheat pita / roti</span><span class="ing-qty">1 (50g)</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Heat EVOO. Cumin crackles. Add onion — 5 min. Add garlic + pepper — 3 min.</li>
+          <li><span class="step-num">2</span>Add harissa, paprika, turmeric — 1 min. Add tomatoes. Simmer 12 min until thick sauce.</li>
+          <li><span class="step-num">3</span>Nestle paneer cubes in sauce. Make 3 wells, crack eggs in.</li>
+          <li><span class="step-num">4</span>Cover, cook 5–7 min for barely-set whites with runny yolk. Do not overcook.</li>
+          <li><span class="step-num">5</span>Scatter coriander + crumbled feta. Serve in pan with pita for dipping.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>LYCOPENE:</strong> Cooked tomatoes release 2–4x more lycopene than raw. Combined with EVOO (fat needed for absorption), this one dish delivers potent cardiovascular and anti-cancer compounds. The sauce base keeps 5 days — crack eggs fresh each morning for a 10-min breakfast.</div></div>
+    </div>
+  </div>
+
+  <!-- B10 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥤</div>
+      <div class="meal-info">
+        <div class="meal-name">High-Protein Savoury Smoothie Bowl</div>
+        <div class="meal-tagline">Post-workout · ultra-fast · nutrient dense</div>
+        <div class="meal-macros"><span class="m-tag m-cal">470 kcal</span><span class="m-tag m-pro">44g protein</span><span class="m-tag m-carb">38g carbs</span><span class="m-tag m-fat">16g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Blend Base</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Greek yogurt</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Whey protein (vanilla)</span><span class="ing-qty">25g</span></li>
+          <li><span class="ing-name">Frozen banana</span><span class="ing-qty">½ (60g)</span></li>
+          <li><span class="ing-name">Frozen spinach</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Almond milk / whole milk</span><span class="ing-qty">100ml</span></li>
+          <li><span class="ing-name">Nut butter (almond/peanut)</span><span class="ing-qty">1 tbsp (16g)</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Toppings</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Granola (low-sugar)</span><span class="ing-qty">30g</span></li>
+          <li><span class="ing-name">Mixed berries</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Chia seeds</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Hemp seeds</span><span class="ing-qty">1 tbsp (10g)</span></li>
+          <li><span class="ing-name">Honey drizzle</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Blend all base ingredients until very thick — should hold a spoon upright.</li>
+          <li><span class="step-num">2</span>Pour into wide bowl. Arrange toppings in rows — granola, berries, seeds.</li>
+          <li><span class="step-num">3</span>Drizzle honey. Eat immediately (base softens quickly).</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>HEMP SEEDS:</strong> 10g complete protein per 3 tbsp, ideal omega-6:3 ratio of 3:1, all essential amino acids. The one plant food genuinely comparable to egg protein quality. Don't skip them.</div></div>
+    </div>
+  </div>
+
+</div><!-- /breakfast -->
+
+<!-- ======================================================= -->
+<!-- LUNCH -->
+<!-- ======================================================= -->
+<div id="lunch" class="section">
+  <div class="cat-header">
+    <span class="cat-icon">☀️</span>
+    <span class="cat-title">LUNCH</span>
+    <span class="cat-count">10 OPTIONS</span>
+  </div>
+  <div class="timing-badge">⏰ 12:00–1:00pm · Biggest meal · High carb + protein</div>
+
+  <!-- L1 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍚</div>
+      <div class="meal-info">
+        <div class="meal-name">High-Protein Dal + Brown Rice Bowl</div>
+        <div class="meal-tagline">Classic done right · complete protein · iron-rich</div>
+        <div class="meal-macros"><span class="m-tag m-cal">620 kcal</span><span class="m-tag m-pro">42g protein</span><span class="m-tag m-carb">72g carbs</span><span class="m-tag m-fat">16g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (1 serving)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Toor dal</span><span class="ing-qty">80g dry</span></li>
+          <li><span class="ing-name">Masoor dal</span><span class="ing-qty">40g dry</span></li>
+          <li><span class="ing-name">Brown rice, cooked</span><span class="ing-qty">150g cooked</span></li>
+          <li><span class="ing-name">Paneer, cubed</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Tomatoes</span><span class="ing-qty">2 medium (200g)</span></li>
+          <li><span class="ing-name">Onion</span><span class="ing-qty">1 medium</span></li>
+          <li><span class="ing-name">Garlic</span><span class="ing-qty">3 cloves</span></li>
+          <li><span class="ing-name">Ginger</span><span class="ing-qty">1 inch</span></li>
+          <li><span class="ing-name">Cumin + mustard seeds</span><span class="ing-qty">1 tsp + ½ tsp</span></li>
+          <li><span class="ing-name">Turmeric + coriander powder</span><span class="ing-qty">½ tsp + 1 tsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">2 tsp</span></li>
+          <li><span class="ing-name">Cucumber raita</span><span class="ing-qty">100g yogurt + cucumber</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Pressure cook dals with 600ml water + turmeric — 3 whistles.</li>
+          <li><span class="step-num">2</span>Temper in ghee: mustard → cumin → onion (8 min golden) → garlic + ginger → tomatoes + spices. Cook until oil separates.</li>
+          <li><span class="step-num">3</span>Add cooked dal. Simmer 10 min. Add paneer last 3 min.</li>
+          <li><span class="step-num">4</span>Serve over brown rice with cucumber raita.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>BATCH:</strong> 4x this recipe on Sunday. Refrigerates 4 days. Cold rice has 60% more resistant starch — better gut + blood sugar.</div></div>
+    </div>
+  </div>
+
+  <!-- L2 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥗</div>
+      <div class="meal-info">
+        <div class="meal-name">Grilled Paneer & Quinoa Power Salad</div>
+        <div class="meal-tagline">Complete amino acids · colourful · vibrant dressing</div>
+        <div class="meal-macros"><span class="m-tag m-cal">580 kcal</span><span class="m-tag m-pro">44g protein</span><span class="m-tag m-carb">48g carbs</span><span class="m-tag m-fat">22g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Paneer, 1cm slices</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Quinoa, cooked</span><span class="ing-qty">150g cooked</span></li>
+          <li><span class="ing-name">Chickpeas, cooked</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Rocket + mixed greens</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Cherry tomatoes</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Cucumber, ribboned</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Avocado, diced</span><span class="ing-qty">½ (70g)</span></li>
+          <li><span class="ing-name">Pumpkin seeds</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">EVOO + lemon + Dijon + garlic</span><span class="ing-qty">2 tbsp + 2 tbsp + 1 tsp + 1 clove</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Whisk dressing. Marinate paneer in half 10 min. Grill 2–3 min each side — char marks.</li>
+          <li><span class="step-num">2</span>Toss quinoa + chickpeas + veg with remaining dressing.</li>
+          <li><span class="step-num">3</span>Plate greens, top with mix, lay paneer. Scatter seeds.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- L3 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥘</div>
+      <div class="meal-info">
+        <div class="meal-name">Rajma + Egg Masala Curry</div>
+        <div class="meal-tagline">Iron + fibre powerhouse · batch staple</div>
+        <div class="meal-macros"><span class="m-tag m-cal">600 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">65g carbs</span><span class="m-tag m-fat">18g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (batch — 4 servings)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Kidney beans (soaked overnight)</span><span class="ing-qty">250g dry</span></li>
+          <li><span class="ing-name">Hard-boiled eggs (per serving)</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Onions, fine dice</span><span class="ing-qty">3 large (300g)</span></li>
+          <li><span class="ing-name">Tomatoes, crushed</span><span class="ing-qty">4 medium (400g)</span></li>
+          <li><span class="ing-name">Garlic + ginger paste</span><span class="ing-qty">6 cloves + 2 tsp</span></li>
+          <li><span class="ing-name">Rajma masala + garam masala</span><span class="ing-qty">2 tsp + 1 tsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Whole wheat roti (per serving)</span><span class="ing-qty">2</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Pressure cook rajma — 5–6 whistles until fully soft.</li>
+          <li><span class="step-num">2</span>Deep golden onion base in ghee (12–15 min — don't rush). Add garlic + ginger → tomatoes + spices. Cook until oil floats.</li>
+          <li><span class="step-num">3</span>Add rajma + 200ml cooking water. Mash ¼ beans. Simmer 15 min.</li>
+          <li><span class="step-num">4</span>Per serving: top with 2 halved boiled eggs + roti.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- L4 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫔</div>
+      <div class="meal-info">
+        <div class="meal-name">Egg & Veggie Stuffed Whole Wheat Wraps</div>
+        <div class="meal-tagline">15-minute prep · high fibre · on-the-go</div>
+        <div class="meal-macros"><span class="m-tag m-cal">555 kcal</span><span class="m-tag m-pro">38g protein</span><span class="m-tag m-carb">52g carbs</span><span class="m-tag m-fat">20g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (2 wraps)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Whole wheat tortillas</span><span class="ing-qty">2 large (80g)</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">3</span></li>
+          <li><span class="ing-name">Egg whites</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Low-fat paneer, crumbled</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Spinach</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Bell pepper</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Mushrooms</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Avocado, mashed</span><span class="ing-qty">½</span></li>
+          <li><span class="ing-name">Greek yogurt + sriracha</span><span class="ing-qty">2 tbsp each</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Sauté mushrooms + pepper high heat 4 min. Add spinach 1 min.</li>
+          <li><span class="step-num">2</span>Pour eggs + whites over veg + paneer. Soft scramble. Remove at 80% set.</li>
+          <li><span class="step-num">3</span>Spread avocado + yogurt + sriracha on tortilla. Fill. Roll. Toast seam-down 1 min.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- L5 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫕</div>
+      <div class="meal-info">
+        <div class="meal-name">Chole (Chickpea Curry) with Paneer</div>
+        <div class="meal-tagline">Punjabi classic · plant protein king · deeply spiced</div>
+        <div class="meal-macros"><span class="m-tag m-cal">610 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">68g carbs</span><span class="m-tag m-fat">16g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (batch — 4 servings)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Dried chickpeas (soaked overnight)</span><span class="ing-qty">300g</span></li>
+          <li><span class="ing-name">Paneer, cubed (per serving)</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Onions, blended to paste</span><span class="ing-qty">3 large</span></li>
+          <li><span class="ing-name">Tomatoes, blended</span><span class="ing-qty">4 medium</span></li>
+          <li><span class="ing-name">Garlic + ginger paste</span><span class="ing-qty">2 tbsp each</span></li>
+          <li><span class="ing-name">Tea bag (for dark colour)</span><span class="ing-qty">1</span></li>
+          <li><span class="ing-name">Chole masala</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Amchur (dry mango powder)</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Whole wheat bhatura / 2 rotis (per serving)</span><span class="ing-qty">80g</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Pressure cook chickpeas with tea bag + salt — 6 whistles. Remove tea bag. Reserve cooking water.</li>
+          <li><span class="step-num">2</span>Brown onion paste in ghee until deep mahogany — 15 min. Add garlic + ginger — 3 min. Add tomato paste — cook 12 min until oil surfaces.</li>
+          <li><span class="step-num">3</span>Add chole masala + amchur. Add chickpeas + 300ml cooking water. Simmer 20 min — gravy thickens.</li>
+          <li><span class="step-num">4</span>Per serving: add paneer cubes for last 5 min. Serve with roti + sliced onion + lemon.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>THE TEA BAG TRICK:</strong> Cooking chickpeas with a black tea bag gives them an authentic dark brown colour without extra spices. The tannins also reduce gas from the chickpeas. Classic Punjabi dhaba technique.</div></div>
+    </div>
+  </div>
+
+  <!-- L6 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍜</div>
+      <div class="meal-info">
+        <div class="meal-name">Miso Tofu & Edamame Noodle Bowl</div>
+        <div class="meal-tagline">Japanese-inspired · gut-healthy · isoflavones</div>
+        <div class="meal-macros"><span class="m-tag m-cal">570 kcal</span><span class="m-tag m-pro">38g protein</span><span class="m-tag m-carb">58g carbs</span><span class="m-tag m-fat">18g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Firm tofu, pressed + cubed</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Edamame, shelled</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Soba noodles (buckwheat)</span><span class="ing-qty">80g dry</span></li>
+          <li><span class="ing-name">Egg, soft-boiled (halved)</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Broccoli florets</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Pak choi / bok choy</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">White miso paste</span><span class="ing-qty">2 tbsp (30g)</span></li>
+          <li><span class="ing-name">Tamari / low-sodium soy</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Sesame oil</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Ginger, grated</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Garlic</span><span class="ing-qty">2 cloves</span></li>
+          <li><span class="ing-name">Spring onions + sesame seeds</span><span class="ing-qty">to garnish</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Soft boil eggs 6.5 min, ice water immediately. Peel, halve.</li>
+          <li><span class="step-num">2</span>Pan-fry tofu cubes in minimal oil on high heat — 4 min each side until deeply golden. Add tamari last 30 sec.</li>
+          <li><span class="step-num">3</span>Blanch soba 4 min (per pack), rinse cold. Blanch broccoli 2 min, pak choi 1 min.</li>
+          <li><span class="step-num">4</span>Miso broth: dissolve miso in 300ml warm (not boiling) water. Add garlic + ginger + sesame oil.</li>
+          <li><span class="step-num">5</span>Assemble: noodles in bowl, pour miso broth, arrange tofu + veg + edamame + eggs. Garnish.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>MISO NOTE:</strong> Never boil miso — you destroy the beneficial probiotic bacteria (Aspergillus oryzae). The gut-skin axis is real: fermented foods reduce psoriasis flare frequency. Add miso to warm, not boiling, liquid always.</div></div>
+    </div>
+  </div>
+
+  <!-- L7 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🧆</div>
+      <div class="meal-info">
+        <div class="meal-name">Masoor Dal Soup with Paneer Toast</div>
+        <div class="meal-tagline">Warming · iron-rich · easy batch</div>
+        <div class="meal-macros"><span class="m-tag m-cal">540 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">55g carbs</span><span class="m-tag m-fat">16g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Red lentils (masoor)</span><span class="ing-qty">100g dry</span></li>
+          <li><span class="ing-name">Carrot, diced</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Celery, sliced</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Onion</span><span class="ing-qty">1 medium</span></li>
+          <li><span class="ing-name">Garlic</span><span class="ing-qty">3 cloves</span></li>
+          <li><span class="ing-name">Cumin + coriander + turmeric</span><span class="ing-qty">1 tsp + 1 tsp + ½ tsp</span></li>
+          <li><span class="ing-name">Vegetable stock</span><span class="ing-qty">600ml</span></li>
+          <li><span class="ing-name">Spinach</span><span class="ing-qty">60g (stir in at end)</span></li>
+          <li><span class="ing-name">Lemon juice</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Paneer, sliced thick</span><span class="ing-qty">120g</span></li>
+          <li><span class="ing-name">Whole grain bread</span><span class="ing-qty">2 slices</span></li>
+          <li><span class="ing-name">EVOO + garlic (for toast)</span><span class="ing-qty">1 tsp + 1 clove</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Sauté onion + garlic + spices in ghee 5 min. Add carrot + celery — 3 min. Add lentils + stock. Boil, simmer 20 min until soft.</li>
+          <li><span class="step-num">2</span>Blend half the soup for creaminess, return to pot. Add spinach + lemon. Season.</li>
+          <li><span class="step-num">3</span>Paneer toast: grill paneer slices 2 min each side. Rub garlic over toasted bread, lay paneer on top with a drizzle of EVOO.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- L8 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍛</div>
+      <div class="meal-info">
+        <div class="meal-name">Egg Fried Brown Rice</div>
+        <div class="meal-tagline">Uses leftover rice · wok-fast · protein-loaded</div>
+        <div class="meal-macros"><span class="m-tag m-cal">580 kcal</span><span class="m-tag m-pro">36g protein</span><span class="m-tag m-carb">64g carbs</span><span class="m-tag m-fat">18g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Cooked cold brown rice (day-old)</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">3</span></li>
+          <li><span class="ing-name">Egg whites</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Edamame / frozen peas</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Carrots, fine dice</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Spring onions</span><span class="ing-qty">4</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">2 cloves + 1 tsp</span></li>
+          <li><span class="ing-name">Tamari / low-sodium soy</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Sesame oil</span><span class="ing-qty">1 tsp (finish)</span></li>
+          <li><span class="ing-name">Coconut oil (high-heat cooking)</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Toasted sesame seeds</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Chilli oil / sriracha</span><span class="ing-qty">to taste</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Wok (or wide pan) on maximum heat — smoking hot. Add coconut oil.</li>
+          <li><span class="step-num">2</span>Whisk eggs + whites. Pour in wok — scramble 45 sec into large pieces. Remove. Set aside.</li>
+          <li><span class="step-num">3</span>More heat — add garlic + ginger 30 sec. Add carrot 2 min. Add cold rice — spread flat, don't stir 2 min (forms crust). Then toss.</li>
+          <li><span class="step-num">4</span>Add edamame + tamari. Toss 2 min. Return eggs + white parts of spring onion.</li>
+          <li><span class="step-num">5</span>Off heat: sesame oil + green spring onion tops + sesame seeds + chilli.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>THE KEY:</strong> Day-old cold rice is non-negotiable. Fresh rice has too much moisture and turns to mush. Always cook extra brown rice and refrigerate for next-day fried rice. The crust that forms is called "wok hei" — the hallmark of great fried rice.</div></div>
+    </div>
+  </div>
+
+  <!-- L9 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫙</div>
+      <div class="meal-info">
+        <div class="meal-name">Paneer & Lentil Mason Jar Salad</div>
+        <div class="meal-tagline">Meal-prep ready · travels well · office lunch</div>
+        <div class="meal-macros"><span class="m-tag m-cal">545 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">44g carbs</span><span class="m-tag m-fat">20g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (1 large jar)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Cooked green/brown lentils</span><span class="ing-qty">100g cooked</span></li>
+          <li><span class="ing-name">Paneer, grilled cubes</span><span class="ing-qty">120g</span></li>
+          <li><span class="ing-name">Quinoa, cooked</span><span class="ing-qty">80g cooked</span></li>
+          <li><span class="ing-name">Roasted red pepper, strips</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Cucumber, diced</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Cherry tomatoes</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Spinach + rocket</span><span class="ing-qty">50g</span></li>
+          <li><span class="ing-name">Walnut halves</span><span class="ing-qty">20g</span></li>
+          <li><span class="ing-name">Feta / paneer crumble</span><span class="ing-qty">30g</span></li>
+          <li><span class="ing-name">Tahini lemon dressing<br><span class="ing-note">2 tbsp tahini + 2 tbsp lemon + 1 clove garlic + water</span></span><span class="ing-qty">4 tbsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Jar Layering Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Layer from bottom UP: dressing first → lentils → quinoa → pepper + cucumber + tomatoes → paneer → greens → walnuts + feta on top.</li>
+          <li><span class="step-num">2</span>This order ensures greens stay crisp and dressing doesn't touch them until eating.</li>
+          <li><span class="step-num">3</span>Seal. Refrigerate up to 3 days. Shake or tip into bowl to eat.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>TAHINI:</strong> Sesame paste is the richest plant source of calcium after dairy — 128mg per 2 tbsp. Also loaded with zinc, copper, and methionine — an amino acid missing from most legumes. Tahini + lentils = complete protein profile.</div></div>
+    </div>
+  </div>
+
+  <!-- L10 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫓</div>
+      <div class="meal-info">
+        <div class="meal-name">Greek-Style Loaded Flatbread Pizza</div>
+        <div class="meal-tagline">Satisfying · Mediterranean · quick assembly</div>
+        <div class="meal-macros"><span class="m-tag m-cal">560 kcal</span><span class="m-tag m-pro">42g protein</span><span class="m-tag m-carb">50g carbs</span><span class="m-tag m-fat">20g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Whole wheat pitta (large)</span><span class="ing-qty">2 (100g)</span></li>
+          <li><span class="ing-name">Eggs, poached or fried</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Low-fat paneer, sliced</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Greek yogurt (sauce base)</span><span class="ing-qty">3 tbsp</span></li>
+          <li><span class="ing-name">Tomato, sliced thin</span><span class="ing-qty">1 medium</span></li>
+          <li><span class="ing-name">Spinach, wilted briefly</span><span class="ing-qty">50g</span></li>
+          <li><span class="ing-name">Kalamata olives</span><span class="ing-qty">8 (30g)</span></li>
+          <li><span class="ing-name">Red onion, thin rings</span><span class="ing-qty">30g</span></li>
+          <li><span class="ing-name">Oregano + chilli flakes</span><span class="ing-qty">½ tsp each</span></li>
+          <li><span class="ing-name">EVOO drizzle</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Toast pitta in oven 180°C 4 min until slightly crisp.</li>
+          <li><span class="step-num">2</span>Spread yogurt as sauce base. Season yogurt with garlic, salt, lemon.</li>
+          <li><span class="step-num">3</span>Layer spinach → tomato → paneer → olives → onion → oregano.</li>
+          <li><span class="step-num">4</span>Oven 200°C 8 min until paneer softens and edges golden. Top with poached or fried egg + EVOO drizzle.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /lunch -->
+
+<!-- ======================================================= -->
+<!-- DINNER -->
+<!-- ======================================================= -->
+<div id="dinner" class="section">
+  <div class="cat-header">
+    <span class="cat-icon">🌙</span>
+    <span class="cat-title">DINNER</span>
+    <span class="cat-count">10 OPTIONS</span>
+  </div>
+  <div class="timing-badge">⏰ 6:30–7:00pm · Lower carb · Eat by 7pm</div>
+
+  <!-- D1 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥦</div>
+      <div class="meal-info">
+        <div class="meal-name">Palak Paneer (Lean Version)</div>
+        <div class="meal-tagline">Iron + calcium + vitamin K · muscle-building classic</div>
+        <div class="meal-macros"><span class="m-tag m-cal">520 kcal</span><span class="m-tag m-pro">42g protein</span><span class="m-tag m-carb">28g carbs</span><span class="m-tag m-fat">24g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (serves 2)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Low-fat paneer, 2cm cubes</span><span class="ing-qty">250g</span></li>
+          <li><span class="ing-name">Fresh spinach</span><span class="ing-qty">400g</span></li>
+          <li><span class="ing-name">Onion</span><span class="ing-qty">1 large</span></li>
+          <li><span class="ing-name">Tomato</span><span class="ing-qty">1 medium</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">4 cloves + 1 inch</span></li>
+          <li><span class="ing-name">Green chilli</span><span class="ing-qty">1–2</span></li>
+          <li><span class="ing-name">Low-fat cream</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Kasoori methi + garam masala</span><span class="ing-qty">1 tsp + ½ tsp</span></li>
+          <li><span class="ing-name">Whole wheat roti (per person)</span><span class="ing-qty">1 (40g)</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Blanch spinach 1–2 min → ice water immediately → blend smooth with chilli, ginger. Preserves green + folate.</li>
+          <li><span class="step-num">2</span>Pan-fry paneer cubes ½ tsp ghee until golden edges — set aside.</li>
+          <li><span class="step-num">3</span>Remaining ghee: onion 7 min golden → garlic → tomato + turmeric → spinach purée.</li>
+          <li><span class="step-num">4</span>Add paneer + cream. Simmer 5 min. Kasoori methi + garam masala + lemon. Serve with roti.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D2 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍳</div>
+      <div class="meal-info">
+        <div class="meal-name">Egg Bhurji with Stir-Fried Veg</div>
+        <div class="meal-tagline">Fast · protein-dense · lower carb</div>
+        <div class="meal-macros"><span class="m-tag m-cal">490 kcal</span><span class="m-tag m-pro">44g protein</span><span class="m-tag m-carb">22g carbs</span><span class="m-tag m-fat">26g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">3</span></li>
+          <li><span class="ing-name">Egg whites</span><span class="ing-qty">3</span></li>
+          <li><span class="ing-name">Paneer, small cubes</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Broccoli florets</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Bell pepper, mixed</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Zucchini, diced</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Cherry tomatoes</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Cumin + turmeric + masala</span><span class="ing-qty">½ tsp each</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1½ tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Steam broccoli 4 min — still firm. High heat pan, sauté pepper + zucchini 3–4 min caramelised.</li>
+          <li><span class="step-num">2</span>Add tomatoes + paneer + spices. Toss. Pour whisked eggs over everything.</li>
+          <li><span class="step-num">3</span>Large gentle folds every 30 sec. Remove at 80% set. Lemon + coriander.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D3 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫕</div>
+      <div class="meal-info">
+        <div class="meal-name">Methi Paneer Curry</div>
+        <div class="meal-tagline">Fenugreek-loaded · testosterone-supporting · bold</div>
+        <div class="meal-macros"><span class="m-tag m-cal">500 kcal</span><span class="m-tag m-pro">38g protein</span><span class="m-tag m-carb">24g carbs</span><span class="m-tag m-fat">28g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (serves 2)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Paneer, 2cm cubes</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Fresh fenugreek leaves (methi)</span><span class="ing-qty">150g (or 3 tbsp dried)</span></li>
+          <li><span class="ing-name">Spinach</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Onion, diced</span><span class="ing-qty">1 large</span></li>
+          <li><span class="ing-name">Tomato, diced</span><span class="ing-qty">2 medium</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">4 cloves + 1 inch</span></li>
+          <li><span class="ing-name">Greek yogurt (stirred in)</span><span class="ing-qty">3 tbsp (50g)</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Cumin + coriander + turmeric</span><span class="ing-qty">1 tsp + 1 tsp + ½ tsp</span></li>
+          <li><span class="ing-name">Whole wheat roti</span><span class="ing-qty">1 per person</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Blanch fresh methi 1 min (removes bitterness). Squeeze dry. Chop roughly.</li>
+          <li><span class="step-num">2</span>Golden onion in ghee 8 min. Add garlic + ginger + spices. Add tomatoes — cook 8 min until thick.</li>
+          <li><span class="step-num">3</span>Add methi + spinach — cook 4 min. Stir in yogurt off heat (prevent curdling).</li>
+          <li><span class="step-num">4</span>Add paneer cubes, warm through 3 min. Serve with roti.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>FENUGREEK:</strong> Methi contains diosgenin — a compound shown in studies to raise testosterone levels and improve insulin sensitivity. It's also rich in iron, vitamin K, and folate. Cook it regularly.</div></div>
+    </div>
+  </div>
+
+  <!-- D4 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍲</div>
+      <div class="meal-info">
+        <div class="meal-name">Mixed Dal Tadka with Roasted Veg</div>
+        <div class="meal-tagline">Digestive-friendly · protein-fibre combo · light</div>
+        <div class="meal-macros"><span class="m-tag m-cal">500 kcal</span><span class="m-tag m-pro">36g protein</span><span class="m-tag m-carb">52g carbs</span><span class="m-tag m-fat">14g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Moong dal</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Masoor dal</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Cauliflower + carrot + sweet potato</span><span class="ing-qty">150g + 80g + 80g</span></li>
+          <li><span class="ing-name">Olive oil (roasting)</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Ghee (tadka)</span><span class="ing-qty">1½ tsp</span></li>
+          <li><span class="ing-name">Garlic, sliced</span><span class="ing-qty">4 cloves</span></li>
+          <li><span class="ing-name">Dried red chilli</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Paneer, crumbled (top)</span><span class="ing-qty">60g</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Oven 200°C. Toss veg in oil + spices. Roast 25–30 min until caramelised.</li>
+          <li><span class="step-num">2</span>Cook dals soft. Season. Sizzling ghee tadka with garlic + chilli — pour over dal.</li>
+          <li><span class="step-num">3</span>Plate dal base → roasted veg → crumbled paneer → lemon.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D5 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥗</div>
+      <div class="meal-info">
+        <div class="meal-name">Warm Roasted Veg & Halloumi Salad</div>
+        <div class="meal-tagline">Mediterranean · high calcium · low carb</div>
+        <div class="meal-macros"><span class="m-tag m-cal">510 kcal</span><span class="m-tag m-pro">34g protein</span><span class="m-tag m-carb">26g carbs</span><span class="m-tag m-fat">30g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Halloumi, sliced 1cm</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Courgette, half-moons</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Aubergine, cubed</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Red onion, wedges</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Cherry tomatoes</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Chickpeas, drained</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Mixed greens + rocket</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">EVOO + lemon + honey + Dijon</span><span class="ing-qty">2 tbsp + 1.5 tbsp + ½ tsp + ½ tsp</span></li>
+          <li><span class="ing-name">Fresh mint + pomegranate seeds</span><span class="ing-qty">to garnish</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Oven 220°C. Toss courgette, aubergine, onion in EVOO + salt. Roast 20 min. Add tomatoes + chickpeas — 10 more min.</li>
+          <li><span class="step-num">2</span>Grill halloumi in dry hot pan 2 min each side until golden char. Do not add oil — halloumi self-bastes.</li>
+          <li><span class="step-num">3</span>Whisk dressing. Toss greens with half dressing. Add warm veg. Top with halloumi.</li>
+          <li><span class="step-num">4</span>Drizzle remaining dressing. Scatter mint + pomegranate.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D6 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥘</div>
+      <div class="meal-info">
+        <div class="meal-name">Paneer Tikka Masala (Lightened)</div>
+        <div class="meal-tagline">Restaurant-quality at home · lower fat · protein-rich</div>
+        <div class="meal-macros"><span class="m-tag m-cal">545 kcal</span><span class="m-tag m-pro">44g protein</span><span class="m-tag m-carb">32g carbs</span><span class="m-tag m-fat">26g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Paneer Marinade</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Paneer, large cubes</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Greek yogurt</span><span class="ing-qty">3 tbsp</span></li>
+          <li><span class="ing-name">Tandoori masala</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Ginger-garlic paste</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Lemon juice</span><span class="ing-qty">1 tbsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Tikka Masala Sauce</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Onion, blended</span><span class="ing-qty">2 medium</span></li>
+          <li><span class="ing-name">Tomatoes, blended</span><span class="ing-qty">3 medium</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">4 cloves + 1 inch</span></li>
+          <li><span class="ing-name">Cashews soaked + blended (for cream)</span><span class="ing-qty">20g</span></li>
+          <li><span class="ing-name">Tikka masala powder</span><span class="ing-qty">2 tsp</span></li>
+          <li><span class="ing-name">Ghee</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Kasoori methi</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Whole wheat roti</span><span class="ing-qty">1</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Marinate paneer 1 hr minimum (overnight ideal). Grill or air-fry 200°C 12 min until charred edges. This charring is essential to tikka character.</li>
+          <li><span class="step-num">2</span>Sauce: golden onion paste in ghee → garlic + ginger → tomato paste → all spices. Cook until oil surfaces.</li>
+          <li><span class="step-num">3</span>Add blended cashew cream + 100ml water. Simmer 8 min. Sauce should coat a spoon.</li>
+          <li><span class="step-num">4</span>Add grilled paneer + kasoori methi. 5 min gentle heat. Serve with roti.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D7 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫘</div>
+      <div class="meal-info">
+        <div class="meal-name">Butter Bean & Spinach Curry</div>
+        <div class="meal-tagline">Creamy · potassium-rich · gut-nourishing</div>
+        <div class="meal-macros"><span class="m-tag m-cal">490 kcal</span><span class="m-tag m-pro">34g protein</span><span class="m-tag m-carb">50g carbs</span><span class="m-tag m-fat">16g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Butter beans (tin, drained)</span><span class="ing-qty">240g</span></li>
+          <li><span class="ing-name">Low-fat paneer, cubed</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Spinach, fresh</span><span class="ing-qty">150g</span></li>
+          <li><span class="ing-name">Onion + garlic + ginger</span><span class="ing-qty">1 medium + 3 cloves + 1 inch</span></li>
+          <li><span class="ing-name">Coconut milk (light)</span><span class="ing-qty">150ml</span></li>
+          <li><span class="ing-name">Crushed tomatoes</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Curry powder + turmeric + cumin</span><span class="ing-qty">1½ tsp + ½ tsp + 1 tsp</span></li>
+          <li><span class="ing-name">Coconut oil</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Whole wheat roti</span><span class="ing-qty">1</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Onion in coconut oil 6 min. Add garlic + ginger + spices — 2 min. Add tomatoes — 8 min.</li>
+          <li><span class="step-num">2</span>Add coconut milk + butter beans. Simmer 10 min. Add paneer + spinach last 3 min.</li>
+          <li><span class="step-num">3</span>Taste, adjust salt + lemon. Serve with roti.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D8 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥕</div>
+      <div class="meal-info">
+        <div class="meal-name">Paneer & Veggie Stir-Fry with Cauliflower Rice</div>
+        <div class="meal-tagline">Ultra-low carb night · under 300g carbs · cruciferous power</div>
+        <div class="meal-macros"><span class="m-tag m-cal">470 kcal</span><span class="m-tag m-pro">40g protein</span><span class="m-tag m-carb">18g carbs</span><span class="m-tag m-fat">28g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Paneer, strips</span><span class="ing-qty">180g</span></li>
+          <li><span class="ing-name">Cauliflower, grated to rice</span><span class="ing-qty">300g</span></li>
+          <li><span class="ing-name">Broccoli</span><span class="ing-qty">120g</span></li>
+          <li><span class="ing-name">Snap peas</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Baby corn</span><span class="ing-qty">80g</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">3 cloves + 1 tsp</span></li>
+          <li><span class="ing-name">Tamari</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Sesame oil + coconut oil</span><span class="ing-qty">1 tsp + 1 tbsp</span></li>
+          <li><span class="ing-name">Sriracha</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Sesame seeds + spring onion</span><span class="ing-qty">garnish</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Cauliflower rice: pulse raw cauli in food processor to rice-sized pieces. Dry-fry in hot pan 4 min — no oil, no water. Season. Set aside.</li>
+          <li><span class="step-num">2</span>High heat wok. Coconut oil. Fry paneer strips 3 min each side — golden. Remove.</li>
+          <li><span class="step-num">3</span>Same wok: garlic + ginger 30 sec → broccoli + snap peas + corn — 4 min high heat. Add paneer back.</li>
+          <li><span class="step-num">4</span>Deglaze with tamari + sriracha. 1 min toss. Off heat — sesame oil + seeds + spring onion. Serve over cauli rice.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D9 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🍝</div>
+      <div class="meal-info">
+        <div class="meal-name">Lentil Bolognese with Whole Wheat Pasta</div>
+        <div class="meal-tagline">Comfort food · Italian-South Asian fusion · batch hero</div>
+        <div class="meal-macros"><span class="m-tag m-cal">570 kcal</span><span class="m-tag m-pro">36g protein</span><span class="m-tag m-carb">66g carbs</span><span class="m-tag m-fat">14g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (batch — 4 servings)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Green / brown lentils</span><span class="ing-qty">200g dry</span></li>
+          <li><span class="ing-name">Whole wheat pasta (per serving)</span><span class="ing-qty">80g dry</span></li>
+          <li><span class="ing-name">Onion + carrot + celery</span><span class="ing-qty">2 + 2 + 3 sticks</span></li>
+          <li><span class="ing-name">Garlic</span><span class="ing-qty">6 cloves</span></li>
+          <li><span class="ing-name">Tin chopped tomatoes</span><span class="ing-qty">2 x 400g</span></li>
+          <li><span class="ing-name">Tomato paste</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Red wine / veggie stock</span><span class="ing-qty">150ml</span></li>
+          <li><span class="ing-name">Dried oregano + bay leaves</span><span class="ing-qty">2 tsp + 2</span></li>
+          <li><span class="ing-name">EVOO</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Parmesan (or nutritional yeast)</span><span class="ing-qty">20g grated</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Sauté onion, carrot, celery in EVOO — the "soffritto" base — 12 min on low until very soft.</li>
+          <li><span class="step-num">2</span>Add garlic 2 min. Add tomato paste 2 min (caramelises). Add wine — let bubble 2 min.</li>
+          <li><span class="step-num">3</span>Add tinned tomatoes + lentils + oregano + bay. Simmer uncovered 35–40 min until lentils dissolve into thick sauce.</li>
+          <li><span class="step-num">4</span>Cook pasta al dente. Reserve 1 cup pasta water. Toss pasta in sauce — add pasta water as needed.</li>
+          <li><span class="step-num">5</span>Finish with EVOO drizzle + parmesan. Lentil sauce freezes beautifully — batch it.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- D10 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🥬</div>
+      <div class="meal-info">
+        <div class="meal-name">Baked Egg Stuffed Peppers</div>
+        <div class="meal-tagline">Visual wow · vitamin C + iron · one-tray</div>
+        <div class="meal-macros"><span class="m-tag m-cal">480 kcal</span><span class="m-tag m-pro">38g protein</span><span class="m-tag m-carb">24g carbs</span><span class="m-tag m-fat">26g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (2 peppers)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Large red bell peppers</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">2 (1 per pepper)</span></li>
+          <li><span class="ing-name">Low-fat paneer, crumbled</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">Spinach, fine-chopped</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Cherry tomatoes, quartered</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Red onion, fine dice</span><span class="ing-qty">40g</span></li>
+          <li><span class="ing-name">Coriander + cumin + paprika</span><span class="ing-qty">½ tsp each</span></li>
+          <li><span class="ing-name">Greek yogurt (side)</span><span class="ing-qty">100g</span></li>
+          <li><span class="ing-name">EVOO</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Oven 190°C. Halve peppers lengthwise, remove seeds. Brush inside with EVOO. Pre-bake 15 min cut-side down.</li>
+          <li><span class="step-num">2</span>Mix paneer + spinach + tomatoes + onion + spices. Fill pepper halves.</li>
+          <li><span class="step-num">3</span>Make a small well in filling. Crack 1 egg per pepper. Season.</li>
+          <li><span class="step-num">4</span>Bake 15–18 min until egg white is set but yolk still jammy. Serve with spiced yogurt.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /dinner -->
+
+<!-- ======================================================= -->
+<!-- SNACKS -->
+<!-- ======================================================= -->
+<div id="snacks" class="section">
+  <div class="cat-header">
+    <span class="cat-icon">🍎</span>
+    <span class="cat-title">SNACKS</span>
+    <span class="cat-count">10 OPTIONS</span>
+  </div>
+  <div class="timing-badge">⏰ 10:00am & 3:30pm · 200–280 kcal each</div>
+  <div class="snack-grid">
+
+    <div class="snack-card">
+      <div class="snack-icon">🥚</div>
+      <div>
+        <div class="snack-name">Hard-Boiled Eggs + Avocado</div>
+        <div class="snack-desc">2 eggs + ½ avocado + salt, lemon, chilli flakes. Eat the yolks — choline, lutein, and fat-soluble vitamins. Batch boil 6 eggs on Sunday. Avocado pre-cut, lemon squeezed to prevent browning.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">14g protein</span><span class="m-tag m-fat">18g fat</span><span class="m-tag m-cal">230 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🫙</div>
+      <div>
+        <div class="snack-name">Greek Yogurt + Berries + Seeds</div>
+        <div class="snack-desc">150g full-fat Greek yogurt + 60g mixed berries + 1 tbsp chia + 1 tbsp pumpkin seeds + 1 tsp honey. Zero prep. Anti-inflammatory triple: blueberries (anthocyanins), chia (omega-3), pumpkin seeds (zinc).</div>
+        <div class="snack-macros"><span class="m-tag m-pro">18g protein</span><span class="m-tag m-cal">220 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🧀</div>
+      <div>
+        <div class="snack-name">Paneer Tikka Bites (batch prep)</div>
+        <div class="snack-desc">80g paneer cubed + 2 tbsp yogurt + ½ tsp chaat masala + ½ tsp cumin + lemon. Air fry 200°C 12 min. Make a whole week's batch on Sunday — tastes great cold. Highest protein density of all snacks.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">20g protein</span><span class="m-tag m-cal">200 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🥕</div>
+      <div>
+        <div class="snack-name">Hummus + Veggie Crudités</div>
+        <div class="snack-desc">4 tbsp hummus (chickpeas + tahini + lemon + garlic + EVOO) + carrot sticks + cucumber + celery + red pepper. Tahini = top plant calcium source. Chickpeas = slow carbs + plant protein. Make a big batch of hummus weekly.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">10g protein</span><span class="m-tag m-carb">22g carbs</span><span class="m-tag m-cal">200 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🌰</div>
+      <div>
+        <div class="snack-name">Mixed Nuts + 85% Dark Chocolate</div>
+        <div class="snack-desc">25g mixed nuts (walnuts, almonds, 2 Brazil nuts) + 15g 85%+ dark chocolate. 2 Brazil nuts = entire daily selenium — critical for thyroid + testosterone. Dark choc = flavanols for blood pressure + mood. Pre-portion in a jar.</div>
+        <div class="snack-macros"><span class="m-tag m-fat">18g fat</span><span class="m-tag m-pro">6g protein</span><span class="m-tag m-cal">240 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🫘</div>
+      <div>
+        <div class="snack-name">Spiced Roasted Chickpeas</div>
+        <div class="snack-desc">Tin of chickpeas, drained well, pat dry. Toss 1 tsp olive oil + cumin + smoked paprika + garlic powder + salt. Oven 200°C 25–30 min until genuinely crunchy. Batch — keeps 5 days in airtight jar. 40g per snack.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">9g protein</span><span class="m-tag m-carb">18g carbs</span><span class="m-tag m-cal">180 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🥛</div>
+      <div>
+        <div class="snack-name">Turmeric Protein Latte</div>
+        <div class="snack-desc">250ml warm whole milk + 25g vanilla whey + ½ tsp turmeric + ¼ tsp cinnamon + pinch black pepper + ½ tsp ashwagandha. Blend 30 sec. Anti-inflammatory drink that's a protein hit. Best 3:30pm snack for cortisol management.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">30g protein</span><span class="m-tag m-cal">280 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🥜</div>
+      <div>
+        <div class="snack-name">Almond Butter + Apple + Protein Shake</div>
+        <div class="snack-desc">1 tbsp natural almond butter (no added sugar) + 1 medium apple sliced + 20g whey shake (shaken in 200ml water). Apple pectin feeds gut bacteria. Almond butter = vitamin E + oleic acid. Together: perfect pre-workout afternoon fuel.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">28g protein</span><span class="m-tag m-fat">9g fat</span><span class="m-tag m-cal">310 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🫔</div>
+      <div>
+        <div class="snack-name">Mini Egg Muffins (batch bake)</div>
+        <div class="snack-desc">Whisk 6 eggs + 3 whites + 80g spinach + 60g diced pepper + 60g crumbled paneer + seasoning. Pour into oiled muffin tin. Bake 180°C 18 min. Makes 12. Refrigerate 5 days. Eat 2–3 per snack session. Highest portability of all snacks.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">16g protein</span><span class="m-tag m-fat">10g fat</span><span class="m-tag m-cal">200 kcal</span></div>
+      </div>
+    </div>
+
+    <div class="snack-card">
+      <div class="snack-icon">🌾</div>
+      <div>
+        <div class="snack-name">Protein Oat Energy Balls</div>
+        <div class="snack-desc">Mix 100g rolled oats + 30g whey (vanilla) + 3 tbsp almond butter + 2 tbsp honey + 2 tbsp chia seeds + 1 tsp cinnamon. Roll into 12 balls. Refrigerate 1 hr to set. Keeps 1 week. Eat 2 balls per snack. No baking. Genuinely tastes like a treat.</div>
+        <div class="snack-macros"><span class="m-tag m-pro">12g protein</span><span class="m-tag m-carb">22g carbs</span><span class="m-tag m-cal">240 kcal</span></div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /snacks -->
+
+<!-- ======================================================= -->
+<!-- FISH CURRIES -->
+<!-- ======================================================= -->
+<div id="fish" class="section">
+  <div class="cat-header">
+    <span class="cat-icon">🐟</span>
+    <span class="cat-title">FISH CURRIES</span>
+    <span class="cat-count">5 BASES</span>
+  </div>
+
+  <div class="fish-banner">
+    <div class="fish-banner-title">BATCH CURRY SYSTEM</div>
+    <div class="fish-banner-sub">Make the curry base once or twice a week. Add fresh fish per serving in 10–15 min. Target 3–4 fish meals per week. Sardines + mackerel are nutritional gold — omega-3s, vitamin D, B12, selenium, iodine — impossible to replicate from purely plant foods.</div>
+  </div>
+
+  <!-- F1 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🐟</div>
+      <div class="meal-info">
+        <div class="meal-name">South Indian Sardine Curry</div>
+        <div class="meal-tagline">Omega-3 powerhouse · 2.2g EPA+DHA per serving</div>
+        <div class="meal-macros"><span class="m-tag m-cal">560 kcal</span><span class="m-tag m-pro">52g protein</span><span class="m-tag m-carb">30g carbs</span><span class="m-tag m-fat">26g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Curry Base (batch — 4 servings)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Coconut oil</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Mustard seeds + curry leaves</span><span class="ing-qty">1 tsp + 2 sprigs</span></li>
+          <li><span class="ing-name">Shallots, sliced</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">8 cloves + 2 inch</span></li>
+          <li><span class="ing-name">Tomatoes + tamarind paste</span><span class="ing-qty">3 medium + 2 tsp</span></li>
+          <li><span class="ing-name">Coconut milk (light)</span><span class="ing-qty">200ml</span></li>
+          <li><span class="ing-name">Coriander + cumin + Kashmiri chilli + turmeric + black pepper</span><span class="ing-qty">2 tsp + 1 tsp + 1 tsp + ½ tsp + ½ tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Per Serving</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Fresh sardines (cleaned) OR canned in water</span><span class="ing-qty">200g OR 1 tin (120g drained)</span></li>
+          <li><span class="ing-name">Curry base</span><span class="ing-qty">¼ of batch (~200ml)</span></li>
+          <li><span class="ing-name">Brown rice</span><span class="ing-qty">150g cooked</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Hot coconut oil → mustard seeds pop → curry leaves (stand back) → shallots 10 min golden → garlic + ginger → spices → tomatoes 10 min. Add tamarind + coconut milk + 200ml water. Batch done.</li>
+          <li><span class="step-num">2</span>Per serving: heat ¼ base. Simmer sardines (slash fresh ones 3x each side) 8–10 min. Canned: 4 min just to heat. Serve over rice.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>SARDINE NUTRITION:</strong> 383mg calcium, 12mcg B12, 2.2g EPA+DHA, 45mcg selenium, 2.5mg iron per 100g. The soft bones you eat are pure calcium — more bioavailable than supplements. The most nutritionally dense food per pound on earth.</div></div>
+    </div>
+  </div>
+
+  <!-- F2 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🫙</div>
+      <div class="meal-info">
+        <div class="meal-name">Goan Mackerel Curry</div>
+        <div class="meal-tagline">90% daily vitamin D · vinegar-coconut base · bold</div>
+        <div class="meal-macros"><span class="m-tag m-cal">590 kcal</span><span class="m-tag m-pro">50g protein</span><span class="m-tag m-carb">34g carbs</span><span class="m-tag m-fat">28g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Goan Masala Paste (batch)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Dried Kashmiri chillies (soaked 20 min)</span><span class="ing-qty">8</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">8 cloves + 2 inch</span></li>
+          <li><span class="ing-name">Coriander + cumin seeds (dry-roasted)</span><span class="ing-qty">2 tsp + 1 tsp</span></li>
+          <li><span class="ing-name">Turmeric + black pepper</span><span class="ing-qty">1 tsp + 1 tsp</span></li>
+          <li><span class="ing-name">Tamarind paste + coconut vinegar</span><span class="ing-qty">1 tbsp + 2 tbsp</span></li>
+          <li><span class="ing-name">Desiccated coconut</span><span class="ing-qty">3 tbsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Per Serving</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Mackerel fillets</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Curry base (onion + tomato + 6 tbsp paste)</span><span class="ing-qty">¼ batch</span></li>
+          <li><span class="ing-name">Coconut milk (full fat)</span><span class="ing-qty">100ml</span></li>
+          <li><span class="ing-name">Brown rice</span><span class="ing-qty">150g cooked</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Blend paste smooth. Keeps 5 days refrigerated. Fry onion → add paste 5 min → tomatoes 8 min. Batch base ready.</li>
+          <li><span class="step-num">2</span>Heat base per serving. Add coconut milk + 100ml water. Simmer mackerel 8 min. Don't overcook — flakes at thickest point = done.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- F3 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🦐</div>
+      <div class="meal-info">
+        <div class="meal-name">Kerala Fish Molee (Mild Coconut Curry)</div>
+        <div class="meal-tagline">Gentle · golden · any white fish · anti-inflammatory</div>
+        <div class="meal-macros"><span class="m-tag m-cal">520 kcal</span><span class="m-tag m-pro">46g protein</span><span class="m-tag m-carb">28g carbs</span><span class="m-tag m-fat">22g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients (serves 2)</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">White fish (cod/haddock/tilapia), thick pieces</span><span class="ing-qty">300g</span></li>
+          <li><span class="ing-name">Coconut milk (full fat)</span><span class="ing-qty">200ml</span></li>
+          <li><span class="ing-name">Onion, thin crescents</span><span class="ing-qty">2 medium</span></li>
+          <li><span class="ing-name">Green chilli, slit</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Ginger, matchsticks</span><span class="ing-qty">2 inch piece</span></li>
+          <li><span class="ing-name">Turmeric</span><span class="ing-qty">½ tsp</span></li>
+          <li><span class="ing-name">Black pepper, coarsely ground</span><span class="ing-qty">¾ tsp</span></li>
+          <li><span class="ing-name">Curry leaves</span><span class="ing-qty">2 sprigs</span></li>
+          <li><span class="ing-name">Coconut oil</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Lemon juice</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Appam / brown rice</span><span class="ing-qty">150g cooked rice or 2 appam</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Sauté onion crescents in coconut oil on medium — 10 min until translucent and just beginning to gold. Add ginger matchsticks, chilli, curry leaves, turmeric, black pepper — 2 min.</li>
+          <li><span class="step-num">2</span>Add coconut milk + 100ml water. Bring to a gentle simmer — never boil hard or coconut milk splits.</li>
+          <li><span class="step-num">3</span>Slide fish pieces in. Spoon broth over. Cook 8–10 min depending on thickness. Fish is done when it just flakes. Finish with lemon.</li>
+          <li><span class="step-num">4</span>The simplicity is intentional — this dish showcases quality fish and coconut. Don't add extra spices.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>THE MOLEE:</strong> This is Kerala's most delicate curry — designed to showcase fresh fish, not mask it. The black pepper + coconut combination is genuinely anti-inflammatory. Pairs beautifully with Kerala rice appam (fermented rice pancakes) for a probiotic bonus.</div></div>
+    </div>
+  </div>
+
+  <!-- F4 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🐠</div>
+      <div class="meal-info">
+        <div class="meal-name">Tuna & Egg Fried Rice Bowl</div>
+        <div class="meal-tagline">Fast protein hit · canned convenience · Asian-spiced</div>
+        <div class="meal-macros"><span class="m-tag m-cal">540 kcal</span><span class="m-tag m-pro">54g protein</span><span class="m-tag m-carb">48g carbs</span><span class="m-tag m-fat">14g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Tuna in spring water (tin, drained)</span><span class="ing-qty">2 tins (240g drained)</span></li>
+          <li><span class="ing-name">Whole eggs</span><span class="ing-qty">2</span></li>
+          <li><span class="ing-name">Cooked cold brown rice</span><span class="ing-qty">180g</span></li>
+          <li><span class="ing-name">Edamame</span><span class="ing-qty">60g</span></li>
+          <li><span class="ing-name">Spring onions</span><span class="ing-qty">4</span></li>
+          <li><span class="ing-name">Garlic + ginger</span><span class="ing-qty">2 cloves + 1 tsp</span></li>
+          <li><span class="ing-name">Tamari</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Sesame oil</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Coconut oil (wok)</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Sriracha + sesame seeds</span><span class="ing-qty">to finish</span></div>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Smoking hot wok. Scramble eggs → remove. Garlic + ginger 30 sec. Cold rice — spread + don't stir 2 min. Toss.</li>
+          <li><span class="step-num">2</span>Add edamame + tamari. Return eggs. Add tuna last (gently fold — don't mash it).</li>
+          <li><span class="step-num">3</span>Off heat: sesame oil + spring onion + sriracha + sesame seeds.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- F5 -->
+  <div class="meal-card" onclick="toggleCard(this)">
+    <div class="meal-header">
+      <div class="meal-emoji">🐡</div>
+      <div class="meal-info">
+        <div class="meal-name">Spiced Salmon Tikka (Pan-Seared)</div>
+        <div class="meal-tagline">Premium omega-3 · tandoori spiced · high-protein</div>
+        <div class="meal-macros"><span class="m-tag m-cal">580 kcal</span><span class="m-tag m-pro">52g protein</span><span class="m-tag m-carb">22g carbs</span><span class="m-tag m-fat">30g fat</span></div>
+      </div>
+      <div class="expand-arrow">▾</div>
+    </div>
+    <div class="recipe-body">
+      <div class="recipe-section">
+        <div class="rs-title">Ingredients</div>
+        <ul class="ingredient-list">
+          <li><span class="ing-name">Salmon fillet (skin on)</span><span class="ing-qty">200g</span></li>
+          <li><span class="ing-name">Greek yogurt (marinade)</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Tandoori masala</span><span class="ing-qty">1½ tsp</span></li>
+          <li><span class="ing-name">Ginger-garlic paste</span><span class="ing-qty">1 tsp</span></li>
+          <li><span class="ing-name">Lemon juice</span><span class="ing-qty">1 tbsp</span></li>
+          <li><span class="ing-name">Broccoli + asparagus (side)</span><span class="ing-qty">150g + 80g</span></li>
+          <li><span class="ing-name">Brown rice or quinoa</span><span class="ing-qty">120g cooked</span></li>
+          <li><span class="ing-name">Mint + coriander chutney</span><span class="ing-qty">2 tbsp</span></li>
+          <li><span class="ing-name">Ghee or olive oil</span><span class="ing-qty">1 tsp</span></li>
+        </ul>
+      </div>
+      <div class="recipe-section">
+        <div class="rs-title">Method</div>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>Mix yogurt + tandoori masala + garlic-ginger paste + lemon. Coat salmon, marinate 20 min minimum (2h ideal).</li>
+          <li><span class="step-num">2</span>Very hot pan. Ghee. Place salmon skin-side down. Press gently with spatula 10 seconds. Cook 4 min undisturbed — skin crisps fully.</li>
+          <li><span class="step-num">3</span>Flip 2–3 min depending on thickness. Salmon should flake but retain deep pink centre.</li>
+          <li><span class="step-num">4</span>Roast or steam broccoli + asparagus while salmon cooks. Plate with rice/quinoa + chutney drizzle.</li>
+        </ol>
+      </div>
+      <div class="recipe-section"><div class="tip-box"><strong>SALMON EPA+DHA:</strong> One 200g fillet = 3–4g EPA+DHA — the full week's requirement in one meal. Also: astaxanthin (the pink pigment) is one of the most potent antioxidants found in nature, 6000x stronger than vitamin C. It specifically targets inflammatory skin conditions including psoriasis.</div></div>
+    </div>
+  </div>
+
+</div><!-- /fish -->
+
+<!-- ======================================================= -->
+<!-- BEDTIME -->
+<!-- ======================================================= -->
+<div id="bedtime" class="section">
+  <div class="cat-header">
+    <span class="cat-icon">🌙</span>
+    <span class="cat-title">BEDTIME SNACKS</span>
+    <span class="cat-count">7 OPTIONS</span>
+  </div>
+  <div class="timing-badge">⏰ 8:00–8:30pm · 60–90 min before sleep · Casein-dominant</div>
+
+  <div style="background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 14px; margin-bottom: 16px; font-size: 12px; color: var(--muted); line-height: 1.7;">
+    <strong style="color: #a78bfa;">WHY CASEIN AT BEDTIME:</strong> Casein digests at ~6g/hour vs whey's 10g/hour. 300g Greek yogurt + cottage cheese combo feeds muscles for 5–6 hours while you sleep. Combined with your 4am wake + 5am training, this overnight anabolic window is your most valuable recovery tool. Tart cherry adds natural melatonin. Magnesium deepens sleep architecture and relaxes muscles simultaneously.
+  </div>
+
+  <!-- BED1 -->
+  <div class="bed-card">
+    <div class="bed-title">1. The Classic Muscle Nightcap</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">The foundational recipe. Works every time.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Full-fat Greek yogurt</span><span class="ing-qty">200g</span></li>
+      <li><span class="ing-name">Low-fat cottage cheese</span><span class="ing-qty">100g</span></li>
+      <li><span class="ing-name">Tart cherry juice (concentrate)</span><span class="ing-qty">2 tbsp</span></li>
+      <li><span class="ing-name">Raw honey</span><span class="ing-qty">1 tsp</span></li>
+      <li><span class="ing-name">Magnesium glycinate powder</span><span class="ing-qty">300mg</span></li>
+      <li><span class="ing-name">Walnuts</span><span class="ing-qty">20g</span></li>
+      <li><span class="ing-name">Cinnamon</span><span class="ing-qty">½ tsp</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~380 kcal · 38g protein · 28g carbs · 14g fat</strong><br>Mix all together or layer in a bowl. The honey's glycaemic response helps tryptophan cross the blood-brain barrier. Cinnamon stabilises blood sugar overnight — prevents the 3am cortisol spike that disrupts deep sleep.</div>
+  </div>
+
+  <!-- BED2 -->
+  <div class="bed-card">
+    <div class="bed-title">2. Paneer & Warm Turmeric Milk</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">Warm haldi doodh — the original South Asian bedtime ritual, upgraded.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Whole milk, warmed (not boiled)</span><span class="ing-qty">300ml</span></li>
+      <li><span class="ing-name">Low-fat paneer, cubed (eat separately)</span><span class="ing-qty">100g</span></li>
+      <li><span class="ing-name">Turmeric</span><span class="ing-qty">½ tsp</span></li>
+      <li><span class="ing-name">Cinnamon</span><span class="ing-qty">¼ tsp</span></li>
+      <li><span class="ing-name">Black pepper</span><span class="ing-qty">pinch</span></li>
+      <li><span class="ing-name">Ashwagandha powder</span><span class="ing-qty">½ tsp</span></li>
+      <li><span class="ing-name">Raw honey</span><span class="ing-qty">1 tsp</span></li>
+      <li><span class="ing-name">Magnesium glycinate (added to milk)</span><span class="ing-qty">300mg</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~370 kcal · 36g protein · 22g carbs · 16g fat</strong><br>Milk casein + paneer casein = double casein hit. Ashwagandha before bed reduces cortisol by 27% overnight (KSM-66 studies). Whole milk's fat carries curcumin effectively. This is genuinely the most anti-inflammatory bedtime option.</div>
+  </div>
+
+  <!-- BED3 -->
+  <div class="bed-card">
+    <div class="bed-title">3. Chocolate Casein Protein Mousse</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">Tastes like dessert. Works like a recovery supplement.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Greek yogurt (full fat)</span><span class="ing-qty">250g</span></li>
+      <li><span class="ing-name">Raw cacao powder</span><span class="ing-qty">2 tbsp (14g)</span></li>
+      <li><span class="ing-name">Casein protein powder (chocolate)</span><span class="ing-qty">25g</span></li>
+      <li><span class="ing-name">Raw honey or monk fruit sweetener</span><span class="ing-qty">1 tsp</span></li>
+      <li><span class="ing-name">Almond butter</span><span class="ing-qty">1 tbsp</span></li>
+      <li><span class="ing-name">Magnesium glycinate</span><span class="ing-qty">300mg</span></li>
+      <li><span class="ing-name">Walnuts, chopped (top)</span><span class="ing-qty">15g</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~420 kcal · 44g protein · 22g carbs · 18g fat</strong><br>Whisk yogurt + cacao + casein + honey vigorously — becomes thick and mousse-like. Cacao (not cocoa) contains theobromine, which improves blood flow and contains magnesium naturally. Casein + Greek yogurt = 44g slow-release protein. Best tasting bedtime snack by a mile.</div>
+  </div>
+
+  <!-- BED4 -->
+  <div class="bed-card">
+    <div class="bed-title">4. Cottage Cheese Stuffed Medjool Dates</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">Natural melatonin + casein. Exotic. Takes 2 minutes.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Low-fat cottage cheese</span><span class="ing-qty">200g</span></li>
+      <li><span class="ing-name">Medjool dates (pitted)</span><span class="ing-qty">3 (45g)</span></li>
+      <li><span class="ing-name">Almond butter (inside dates)</span><span class="ing-qty">1 tsp</span></li>
+      <li><span class="ing-name">Ground cardamom + cinnamon</span><span class="ing-qty">¼ tsp each</span></li>
+      <li><span class="ing-name">Pistachios, crushed (top)</span><span class="ing-qty">10g</span></li>
+      <li><span class="ing-name">Magnesium glycinate</span><span class="ing-qty">300mg</span></li>
+      <li><span class="ing-name">Warm chamomile tea</span><span class="ing-qty">1 mug (alongside)</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~360 kcal · 32g protein · 38g carbs · 10g fat</strong><br>Dates contain natural melatonin AND tryptophan — the sleep-promoting combination. Stuff each date with ½ tsp almond butter. Eat cottage cheese alongside. Chamomile contains apigenin — binds GABA receptors, genuinely promotes sleep. Higher carbs here deliberately spike insulin mildly to promote tryptophan conversion.</div>
+  </div>
+
+  <!-- BED5 -->
+  <div class="bed-card">
+    <div class="bed-title">5. Kefir & Cherry Recovery Smoothie</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">Probiotic casein + natural melatonin. Blend and sip.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Full-fat kefir (milk-based)</span><span class="ing-qty">250ml</span></li>
+      <li><span class="ing-name">Cottage cheese</span><span class="ing-qty">100g</span></li>
+      <li><span class="ing-name">Frozen tart cherries</span><span class="ing-qty">80g</span></li>
+      <li><span class="ing-name">Banana (frozen)</span><span class="ing-qty">½</span></li>
+      <li><span class="ing-name">Vanilla extract</span><span class="ing-qty">½ tsp</span></li>
+      <li><span class="ing-name">Magnesium glycinate powder</span><span class="ing-qty">300mg</span></li>
+      <li><span class="ing-name">Ground flaxseeds</span><span class="ing-qty">1 tbsp</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~370 kcal · 34g protein · 44g carbs · 10g fat</strong><br>Kefir contains 12+ strains of probiotic bacteria vs yogurt's 2–3. The gut-skin axis is real — consistent kefir consumption reduces psoriasis flare frequency in multiple studies. Tart cherry is the highest natural food source of melatonin. Blend smooth and drink 60–90 min before sleep.</div>
+  </div>
+
+  <!-- BED6 -->
+  <div class="bed-card">
+    <div class="bed-title">6. Spiced Paneer & Walnut Plate</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">Savoury option for those who don't want sweet before bed.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Paneer, cubed or sliced</span><span class="ing-qty">150g</span></li>
+      <li><span class="ing-name">Walnuts</span><span class="ing-qty">25g</span></li>
+      <li><span class="ing-name">Cucumber + celery sticks</span><span class="ing-qty">100g + 60g</span></li>
+      <li><span class="ing-name">Greek yogurt dip</span><span class="ing-qty">80g</span></li>
+      <li><span class="ing-name">Cumin + chaat masala (dusted on paneer)</span><span class="ing-qty">¼ tsp each</span></li>
+      <li><span class="ing-name">Magnesium glycinate</span><span class="ing-qty">300mg</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~390 kcal · 36g protein · 12g carbs · 24g fat</strong><br>Paneer is ~25% casein by protein content. Walnuts are the only nut with significant melatonin (1mg per serving) plus ALA omega-3. Magnesium glycinate specifically (not citrate or oxide) has the best BBB penetration for sleep quality improvement. The yogurt dip adds extra casein protein.</div>
+  </div>
+
+  <!-- BED7 -->
+  <div class="bed-card">
+    <div class="bed-title">7. Peanut Butter Banana Casein Shake</div>
+    <div style="font-size: 12px; color: var(--muted); margin-top: 6px;">Thick, filling, slow-release. On heavy training nights.</div>
+    <ul class="ingredient-list" style="margin-top: 10px;">
+      <li><span class="ing-name">Casein protein powder (vanilla/chocolate)</span><span class="ing-qty">30g</span></li>
+      <li><span class="ing-name">Greek yogurt</span><span class="ing-qty">150g</span></li>
+      <li><span class="ing-name">Whole milk</span><span class="ing-qty">200ml</span></li>
+      <li><span class="ing-name">Natural peanut butter</span><span class="ing-qty">1 tbsp (16g)</span></li>
+      <li><span class="ing-name">Banana</span><span class="ing-qty">½ ripe</span></li>
+      <li><span class="ing-name">Cinnamon</span><span class="ing-qty">½ tsp</span></li>
+      <li><span class="ing-name">Magnesium glycinate</span><span class="ing-qty">300mg</span></li>
+    </ul>
+    <div class="bed-note"><strong>MACROS: ~480 kcal · 46g protein · 38g carbs · 16g fat</strong><br>Use this on training days when you need the extra calories and want maximum overnight recovery. Casein powder + Greek yogurt = double-layer slow release. Banana's tryptophan content + the carb-insulin response optimises brain uptake of sleep-promoting compounds. Peanut butter = leucine to keep muscle protein synthesis triggered overnight.</div>
+  </div>
+
+</div><!-- /bedtime -->
+
+<!-- ======================================================= -->
+<!-- MACROS -->
+<!-- ======================================================= -->
+<div id="macros" class="section">
+  <div class="cat-header">
+    <span class="cat-icon">📊</span>
+    <span class="cat-title">MACROS</span>
+    <span class="cat-count">2200 kcal</span>
+  </div>
+
+  <div class="macro-card">
+    <div class="macro-label">Daily Protein Target</div>
+    <div class="macro-value">185g</div>
+    <div class="macro-bar"><div class="macro-fill" style="width:85%; background: var(--green);"></div></div>
+    <div class="macro-note">1.85g per kg at 100kg. Spread across 5–6 meals. No single meal exceeds 50g (absorption ceiling). Sources: eggs, paneer, Greek yogurt, dal, fish, protein shakes.</div>
+  </div>
+
+  <div class="macro-card">
+    <div class="macro-label">Daily Carbohydrates</div>
+    <div class="macro-value">200g</div>
+    <div class="macro-bar"><div class="macro-fill" style="width:70%; background: var(--teal);"></div></div>
+    <div class="macro-note">Carb-timed around training. Biggest carb hit at post-workout breakfast. Dinner is lower carb. Sources: brown rice, whole wheat roti, oats, quinoa, sweet potato, fruit, legumes. All high-fibre, low-GI.</div>
+  </div>
+
+  <div class="macro-card">
+    <div class="macro-label">Daily Fats</div>
+    <div class="macro-value">65g</div>
+    <div class="macro-bar"><div class="macro-fill" style="width:55%; background: var(--orange);"></div></div>
+    <div class="macro-note">Prioritise: EVOO (oleic acid), ghee (hormones), walnuts + flaxseed (ALA), avocado (monounsaturated), fish omega-3s (EPA/DHA). Avoid: seed oils, trans fats, excess saturated.</div>
+  </div>
+
+  <div class="macro-card">
+    <div class="macro-label">Calorie Deficit</div>
+    <div class="macro-value">−500 kcal</div>
+    <div class="macro-bar"><div class="macro-fill" style="width:40%; background: var(--red);"></div></div>
+    <div class="macro-note">TDEE ~2700 kcal (100kg active male). Target 2200 kcal = 500 kcal deficit = ~0.45kg fat loss/week. Never drop below 2000 kcal. Heavy training days: eat to 2400 kcal.</div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="cat-header" style="margin-top:0"><span class="cat-icon">⚡</span><span class="cat-title">8 NON-NEGOTIABLE RULES</span></div>
+  <div class="macro-card">
+    <ul class="rule-list">
+      <li><span class="rule-num">1</span><div>Protein within 30–60 min of waking AND within 45 min post-workout. These two windows matter more than any other timing.</div></li>
+      <li><span class="rule-num">2</span><div>10-minute walk after lunch daily. Reduces glucose spike 30%. Non-negotiable for South Asian insulin sensitivity.</div></li>
+      <li><span class="rule-num">3</span><div>Minimum 3.5 litres water daily. Muscles are 75% water. 2% dehydration = 15% strength loss. Start with 500ml immediately on waking at 4am.</div></li>
+      <li><span class="rule-num">4</span><div>¼ tsp turmeric + black pepper in at least 2 meals daily. Curcumin suppresses NF-κB — the primary psoriasis inflammatory pathway.</div></li>
+      <li><span class="rule-num">5</span><div>Fish 3–4x per week minimum. ALA (plant omega-3) converts at less than 5% to EPA/DHA. No plant food provides adequate levels. Fish is essential.</div></li>
+      <li><span class="rule-num">6</span><div>Last meal or snack by 8:30pm — 60-90 min before 9pm sleep. The overnight fast to 5am training (~8 hours) optimises GH pulse during deep sleep.</div></li>
+      <li><span class="rule-num">7</span><div>One Brazil nut daily with afternoon snack. Two hits your entire selenium requirement. Don't eat more than 3/day ever — selenium toxicity is real.</div></li>
+      <li><span class="rule-num">8</span><div>Zero alcohol for 12 weeks minimum. Suppresses testosterone 24h, fragments sleep architecture, triggers psoriasis flares, adds 200–400 empty calories per drink. This is the rule that protects all other rules.</div></li>
+    </ul>
+  </div>
+
+  <div class="macro-card" style="background: linear-gradient(135deg, #0d1a0d, #111); border-color: #1a3a1a;">
+    <div class="macro-label">Core Supplement Stack</div>
+    <div style="margin-top: 8px; font-size: 13px; line-height: 2.0; color: #ccc;">
+      <div>☀️ <strong style="color: var(--gold);">Vitamin D3 + K2</strong> — 4000 IU + 100mcg · dinner (fat meal)</div>
+      <div>🐟 <strong style="color: var(--gold);">Omega-3 (EPA+DHA)</strong> — 2g combined if no fish that day</div>
+      <div>🧲 <strong style="color: var(--gold);">Magnesium Glycinate</strong> — 300–400mg · bedtime</div>
+      <div>🌿 <strong style="color: var(--gold);">Curcumin + Piperine</strong> — 500mg · 2x daily with meals</div>
+      <div>🦠 <strong style="color: var(--gold);">Probiotic</strong> — 10+ billion CFU · morning (gut-skin axis)</div>
+      <div>⚡ <strong style="color: var(--gold);">Creatine Monohydrate</strong> — 5g daily · any meal</div>
+      <div>🌱 <strong style="color: var(--gold);">Ashwagandha KSM-66</strong> — 600mg · morning (cortisol ↓, testosterone ↑)</div>
+      <div>🔥 <strong style="color: var(--gold);">Zinc Bisglycinate</strong> — 25mg · evening (testosterone, wound healing)</div>
+    </div>
+  </div>
+
+</div><!-- /macros -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-btn active" onclick="switchNav(this,'breakfast')"><span class="bnav-icon">🌅</span><span class="bnav-label">Breakfast</span></button>
+  <button class="bnav-btn" onclick="switchNav(this,'lunch')"><span class="bnav-icon">☀️</span><span class="bnav-label">Lunch</span></button>
+  <button class="bnav-btn" onclick="switchNav(this,'dinner')"><span class="bnav-icon">🌙</span><span class="bnav-label">Dinner</span></button>
+  <button class="bnav-btn" onclick="switchNav(this,'snacks')"><span class="bnav-icon">🍎</span><span class="bnav-label">Snacks</span></button>
+  <button class="bnav-btn" onclick="switchNav(this,'fish')"><span class="bnav-icon">🐟</span><span class="bnav-label">Fish</span></button>
+  <button class="bnav-btn" onclick="switchNav(this,'bedtime')"><span class="bnav-icon">🌙</span><span class="bnav-label">Bedtime</span></button>
+  <button class="bnav-btn" onclick="switchNav(this,'macros')"><span class="bnav-icon">📊</span><span class="bnav-label">Macros</span></button>
+</div>
+
+<script>
+  function toggleCard(card){ card.classList.toggle('open'); }
+  function showSection(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach((b,i)=>{
+      b.classList.remove('active');
+      const map=['breakfast','lunch','dinner','snacks','fish','bedtime','macros'];
+      if(map[i]===id) b.classList.add('active');
+    });
+  }
+  function switchNav(btn,id){
+    document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    showSection(id);
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
